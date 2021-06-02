@@ -30,7 +30,7 @@ in
 mkShell {
   name = "qmk-firmware";
 
-  buildInputs = [ clang-tools dfu-programmer dfu-util diffutils git pythonEnv poetry niv ]
+  buildInputs = [ clang-tools dfu-programmer dfu-util diffutils git pythonEnv poetry niv hidapi ]
     ++ lib.optional avr [
       pkgsCross.avr.buildPackages.binutils
       pkgsCross.avr.buildPackages.gcc8
@@ -42,9 +42,12 @@ mkShell {
 
   AVR_CFLAGS = lib.optional avr avr_incflags;
   AVR_ASFLAGS = lib.optional avr avr_incflags;
+  LD_LIBRARY_PATH="${hidapi}/lib";
   shellHook = ''
     # Prevent the avr-gcc wrapper from picking up host GCC flags
     # like -iframework, which is problematic on Darwin
     unset NIX_CFLAGS_COMPILE_FOR_TARGET
+    [[ -e .venv ]] || ( python -m venv .venv && source .venv/bin/activate && pip install qmk)
+    source .venv/bin/activate
   '';
 }
